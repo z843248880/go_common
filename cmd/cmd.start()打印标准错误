@@ -1,0 +1,32 @@
+package main
+ 
+import (
+ "fmt"
+ "os/exec"
+ "time"
+ "log"
+)
+ 
+func main() {
+    two("ls /Users/zhangshanci/go_pro/src/54.90/test-go")
+    two("ls /Users/zhangshanci/go_pro/src/54.90/test-go1111")
+}
+
+
+
+func two(s string) {
+    cmd := exec.Command("/bin/bash", "-c", s)
+    stdout, err := cmd.StdoutPipe()
+    if err != nil {
+        log.Fatal(err, "1")
+    }
+    fmt.Println(stdout)
+    if err := cmd.Start(); err != nil {
+        log.Fatal(err, " 标准错误输出")
+    }
+    
+    if err := cmd.Wait(); err != nil {
+        log.Fatal(err, "4")
+    }
+    // fmt.Printf("%s is %d years old\n", person.Name, person.Age)
+}
