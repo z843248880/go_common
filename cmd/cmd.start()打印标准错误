@@ -15,6 +15,9 @@ func main() {
 
 
 func two(s string) {
+    //这样可以获取到标准错误
+    cmd := exec.Command(s)
+    //这样获取不到标准错误
     cmd := exec.Command("/bin/bash", "-c", s)
     stdout, err := cmd.StdoutPipe()
     if err != nil {
