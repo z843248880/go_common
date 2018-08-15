@@ -1,0 +1,38 @@
+
+func runBashCommandAndKillIfTooSlow(command string, killInMilliSeconds time.Duration) (okResult bool, stdout, stderr string) {
+    fmt.Println("running bash command...")
+    fmt.Println(command)
+    cmd := exec.Command("sh", "-c", command)
+
+    //这两行代码的本意是希望将exec.Command的执行后的标准输出和标准错误保存起来，然后返回给main()函数，但是，用下面这两行代码的方法做不到。
+    cmd.Stdout = os.Stdout // cmd.Stdout -> stdout
+    cmd.Stderr = os.Stderr // cmd.Stderr -> stderr
+
+    okResult = true
+
+    err := cmd.Start()
+    log.Printf("Waiting for command to finish...")
+    done := make(chan error, 1)
+    go func() {
+        done <- cmd.Wait()
+    }()
+    select {
+    case <-time.After(killInMilliSeconds * time.Millisecond):
+        if err := cmd.Process.Kill(); err != nil {
+            log.Fatal("failed to kill: ", err)
+            okResult = false
+        }
+        <-done // allow goroutine to exit
+        // log.Println("process killed")
+    case err := <-done:
+        if err != nil {
+            log.Printf("process done with error = %v", err)
+            okResult = false
+        }
+    }
+    if err != nil {
+        log.Fatal(err)
+        okResult = false
+    }
+    return
+}
